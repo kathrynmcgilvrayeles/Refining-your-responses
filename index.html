@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Prompting Essentials — Orbit Bubbles</title>
-  <!-- Tailwind (utility only; styles below handle visuals) -->
+  <title>Prompting Essentials — Orbit Bubbles (Right → Left)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
@@ -41,14 +40,14 @@
     }
 
     .large-circle{
-      width:300px;
-      height:300px;
+      width:340px; /* larger centre circle */
+      height:340px;
       background:var(--light);
       border-radius:50%;
       display:flex;
       align-items:center;
       justify-content:center;
-      padding:24px;
+      padding:28px;
       text-align:center;
       line-height:1.55;
       box-shadow:0 10px 20px rgba(0,0,0,.2);
@@ -60,21 +59,14 @@
       color:var(--darker);
     }
 
-    .large-circle p{
-      margin:0;
-      font-size:1rem;
-      font-weight:400;
-    }
+    .large-circle p{ margin:0; font-size:1rem; font-weight:400; }
 
-    #small-circles-wrapper{
-      position:absolute;
-      inset:0;
-    }
+    #small-circles-wrapper{ position:absolute; inset:0; }
 
     .small-circle{
       position:absolute;
-      width:82px;
-      height:82px;
+      width:95px;   /* larger small circle */
+      height:95px;
       background:var(--blue);
       color:#fff;
       border-radius:50%;
@@ -88,35 +80,26 @@
       font-size:.8rem;
       font-weight:600;
       box-shadow:0 4px 8px rgba(0,0,0,.15);
-      transition:
-        transform .7s ease-in-out,
-        width .25s ease-in-out,
-        height .25s ease-in-out,
-        border .25s ease-in-out,
-        color .25s ease-in-out,
-        background .25s ease-in-out;
+      transition:transform .7s ease-in-out, width .25s ease-in-out, height .25s ease-in-out, border .25s ease-in-out, color .25s ease-in-out, background .25s ease-in-out;
     }
 
     .small-circle.active{
-      width:104px;
-      height:104px;
+      width:120px; /* larger active size */
+      height:120px;
       border:4px solid var(--teal);
       background:var(--darker);
       z-index:10;
       box-shadow:0 8px 16px rgba(0,0,0,.3);
     }
 
-    .small-circle:focus-visible{
-      outline:3px dashed var(--pink);
-      outline-offset:2px;
-    }
+    .small-circle:focus-visible{ outline:3px dashed var(--pink); outline-offset:2px; }
 
     @media (max-width:768px){
       .learning-activity-container{ width:90vw;height:90vw; }
-      .large-circle{ width:52vw;height:52vw;padding:16px; }
+      .large-circle{ width:55vw;height:55vw;padding:16px; }
       .large-circle p{ font-size:.9rem; }
-      .small-circle{ width:15vw;height:15vw;font-size:.65rem;padding:4px; }
-      .small-circle.active{ width:18vw;height:18vw; }
+      .small-circle{ width:16vw;height:16vw;font-size:.65rem;padding:4px; }
+      .small-circle.active{ width:20vw;height:20vw; }
     }
   </style>
 </head>
@@ -129,7 +112,7 @@
   </div>
 
   <script>
-    // ---- Content (your new headings + copy) ----
+    // ---- Content (your headings + copy) ----
     const sectionsData = [
       {
         id: 'output',
@@ -166,13 +149,13 @@
 
     // ---- Layout constants (desktop reference) ----
     const BASE_W = 650;
-    const LARGE_D = 300;
-    const SMALL_D = 82;
-    const ACTIVE_D = 104;
+    const LARGE_D = 340;  // centre circle
+    const SMALL_D = 95;   // small bubble
+    const ACTIVE_D = 120; // active bubble
     const PADDING = 40;
 
-    const LEFT_STEP = 28;
-    const RIGHT_STEP = 28;
+    const LEFT_STEP  = 28; // spacing along left arc (top-left downward)
+    const RIGHT_STEP = 28; // spacing along right arc (top-right downward)
 
     function sizes(){
       const w = container.offsetWidth;
@@ -192,13 +175,13 @@
     const degToRad = d => d * (Math.PI/180);
 
     function render(){
-      const r = orbitRadius();
-      const s = sizes();
-      const cx = container.offsetWidth/2;
-      const cy = container.offsetHeight/2;
+      const r  = orbitRadius();
+      const s  = sizes();
+      const cx = container.offsetWidth / 2;
+      const cy = container.offsetHeight / 2;
 
-      const rightStart = 60;  // top-right
-      const leftStart  = 120; // top-left
+      const rightStart = 60;   // top-right
+      const leftStart  = 120;  // top-left
 
       const activeIndex = sectionsData.findIndex(sec => sec.id === activeCircleId);
 
@@ -206,9 +189,7 @@
         const el = document.getElementById(`circle-${sec.id}`);
         if(!el) return;
 
-        let angleDeg;
         let d = s.small;
-
         if(sec.id === activeCircleId){
           d = s.active;
           el.classList.add('active');
@@ -216,18 +197,16 @@
           el.classList.remove('active');
         }
 
+        // ALL bubbles start on the RIGHT; once a bubble (and any before it) is active, those go to the LEFT.
+        let angleDeg;
         if (activeIndex === -1) {
-          // Initial layout: split evenly around both arcs
-          const half = Math.ceil(sectionsData.length/2);
-          if(i < half){
-            angleDeg = leftStart + (i * LEFT_STEP);
-          } else {
-            const j = i - half;
-            angleDeg = rightStart - (j * RIGHT_STEP);
-          }
-        } else if(i <= activeIndex){
+          // Initial state: everyone on the right arc
+          angleDeg = rightStart - (i * RIGHT_STEP);
+        } else if (i <= activeIndex) {
+          // Selected and all earlier items move to the left arc
           angleDeg = leftStart + (i * LEFT_STEP);
         } else {
+          // Remaining items stay on the right arc, packed from the top
           const j = i - (activeIndex + 1);
           angleDeg = rightStart - (j * RIGHT_STEP);
         }
@@ -236,7 +215,7 @@
         const y = cy - r * Math.sin(degToRad(angleDeg)) - d/2;
 
         el.style.transform = `translate(${x}px, ${y}px)`;
-        el.style.width = `${d}px`;
+        el.style.width  = `${d}px`;
         el.style.height = `${d}px`;
       });
     }
@@ -244,7 +223,6 @@
     function onClickCircle(e){
       const id = e.currentTarget.dataset.id;
       if(activeCircleId === id) return;
-
       activeCircleId = id;
       const section = sectionsData.find(s => s.id === id);
       if(section){
@@ -260,11 +238,10 @@
         div.className = 'small-circle';
         div.id = `circle-${sec.id}`;
         div.dataset.id = sec.id;
+        div.textContent = sec.title;
         div.setAttribute('role','button');
         div.setAttribute('tabindex','0');
         div.setAttribute('aria-label', sec.title);
-        div.title = sec.title;
-        div.textContent = sec.title;
 
         div.addEventListener('click', onClickCircle);
         div.addEventListener('keydown', (ev)=>{
